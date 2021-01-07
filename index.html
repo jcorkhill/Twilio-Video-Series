@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Twilio Video Development Demo</title>
+
+    <style>
+        .media-container {
+            display: flex;
+        }
+
+        .media-container > * + * {
+            margin-left: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="media-container">
+        <div id="local-media-container"></div> 
+        <div id="remote-media-container"></div>
+    </div>
+    
+    <button id="join-button">Join Room</button>
+
+    <script src="./src/video.ts"></script>
+</body>
+</html>
