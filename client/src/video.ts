@@ -5,7 +5,6 @@ import {
     RemoteParticipant, 
     RemoteTrack, 
     RemoteVideoTrack, 
-    Room
 } from 'twilio-video';
 
 import { tokenRepository } from './token-repository';
@@ -14,6 +13,7 @@ import { Nullable } from './types';
 
 // UI Element Handles
 const joinButton = document.querySelector('#join-button') as HTMLButtonElement;
+const leaveButton = document.querySelector('#leave-button') as HTMLButtonElement;
 const remoteMediaContainer = document.querySelector('#remote-media-container') as HTMLDivElement;
 const localMediaContainer = document.querySelector('#local-media-container') as HTMLDivElement;
 const roomNameInput = document.querySelector('#room-name-input') as HTMLInputElement;
@@ -23,6 +23,10 @@ const identityInput = document.querySelector('#identity-input') as HTMLInputElem
  * Entry point.
  */
 async function main() {
+    // Initial state.
+    leaveButton.disabled = true;
+    joinButton.disabled = false;
+
     // Provides a camera preview window.
     const localVideoTrack = await createLocalVideoTrack({ width: 640 });
     localMediaContainer.appendChild(localVideoTrack.attach());
@@ -32,8 +36,6 @@ async function main() {
  * Triggers when the join button is clicked.
  */
 async function onJoinClick() {
-    joinButton.disabled = true;
-
     const roomName = roomNameInput.value;
     const identity = identityInput.value;
     const room = await connect(await tokenRepository.getToken(roomName, identity), {
@@ -51,6 +53,12 @@ async function onJoinClick() {
     room.on('participantConnected', onParticipantConnected);
     room.on('participantDisconnected', onParticipantDisconnected);
     window.onbeforeunload = () => room.disconnect();
+    leaveButton.addEventListener('click', () => {
+        room.disconnect();
+        toggleInputs();
+    });
+
+    toggleInputs();
 }
 
 /**
@@ -152,6 +160,17 @@ function trackExistsAndIsAttachable(track?: Nullable<RemoteTrack>): track is Rem
         (track as RemoteAudioTrack).attach !== undefined ||
         (track as RemoteVideoTrack).attach !== undefined
     );
+}
+
+/**
+ * Toggles inputs into their opposite form in terms of whether they're disabled.
+ */
+function toggleInputs() {
+    joinButton.disabled = !joinButton.disabled;
+    leaveButton.disabled = !leaveButton.disabled;
+
+    identityInput.value = '';
+    roomNameInput.value = '';
 }
 
 // Button event handlers.
