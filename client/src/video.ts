@@ -32,8 +32,10 @@ async function main() {
 async function onJoinClick() {
     joinButton.disabled = true;
 
-    const room = await connect(tokenRepository.getNextToken(), {
-        name: 'room-name',
+    const roomName = '';
+    const identity = '';
+    const room = await connect(await tokenRepository.getToken(roomName, identity), {
+        name: roomName,
         audio: true,
         video: { width: 640 }
     });
