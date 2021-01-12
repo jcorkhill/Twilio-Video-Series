@@ -1,9 +1,11 @@
 import express from 'express';
+import cors from 'cors';
 import { generateToken } from './api/controller';
 
 const PORT = parseInt(process.env.PORT as string) || 3000;
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
