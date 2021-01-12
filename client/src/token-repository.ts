@@ -15,10 +15,12 @@ function makeTokenRepository() {
          * pointer for the next usage.
          */
         async getToken(roomName: string, identity: string) {
-            const response = await axios.post<{ token: string }>('http://localhost:3000', {
+            const response = await axios.post<{ token: string }>('http://localhost:3000/create-token', {
                 roomName,
                 identity
             });
+
+            console.log(response.data.token)
 
             return response.data.token;
         }

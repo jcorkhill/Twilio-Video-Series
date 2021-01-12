@@ -16,6 +16,8 @@ import { Nullable } from './types';
 const joinButton = document.querySelector('#join-button') as HTMLButtonElement;
 const remoteMediaContainer = document.querySelector('#remote-media-container') as HTMLDivElement;
 const localMediaContainer = document.querySelector('#local-media-container') as HTMLDivElement;
+const roomNameInput = document.querySelector('#room-name-input') as HTMLInputElement;
+const identityInput = document.querySelector('#identity-input') as HTMLInputElement;
 
 /**
  * Entry point.
@@ -32,8 +34,8 @@ async function main() {
 async function onJoinClick() {
     joinButton.disabled = true;
 
-    const roomName = '';
-    const identity = '';
+    const roomName = roomNameInput.value;
+    const identity = identityInput.value;
     const room = await connect(await tokenRepository.getToken(roomName, identity), {
         name: roomName,
         audio: true,
