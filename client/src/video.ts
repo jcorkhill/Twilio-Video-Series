@@ -5,6 +5,7 @@ import {
     RemoteParticipant, 
     RemoteTrack, 
     RemoteVideoTrack, 
+    Room
 } from 'twilio-video';
 
 import { tokenRepository } from './token-repository';
@@ -18,6 +19,9 @@ const remoteMediaContainer = document.querySelector('#remote-media-container') a
 const localMediaContainer = document.querySelector('#local-media-container') as HTMLDivElement;
 const roomNameInput = document.querySelector('#room-name-input') as HTMLInputElement;
 const identityInput = document.querySelector('#identity-input') as HTMLInputElement;
+
+// Room reference
+let room: Room;
 
 /**
  * Entry point.
@@ -38,7 +42,7 @@ async function main() {
 async function onJoinClick() {
     const roomName = roomNameInput.value;
     const identity = identityInput.value;
-    const room = await connect(await tokenRepository.getToken(roomName, identity), {
+    room = await connect(await tokenRepository.getToken(roomName, identity), {
         name: roomName,
         audio: true,
         video: { width: 640 }
@@ -53,11 +57,16 @@ async function onJoinClick() {
     room.on('participantConnected', onParticipantConnected);
     room.on('participantDisconnected', onParticipantDisconnected);
     window.onbeforeunload = () => room.disconnect();
-    leaveButton.addEventListener('click', () => {
-        room.disconnect();
-        toggleInputs();
-    });
+    
 
+    toggleInputs();
+}
+
+/**
+ * Triggers when the leave button is clicked.
+ */
+function onLeaveClick() {
+    room.disconnect();
     toggleInputs();
 }
 
@@ -175,6 +184,7 @@ function toggleInputs() {
 
 // Button event handlers.
 joinButton.addEventListener('click', onJoinClick);
+leaveButton.addEventListener('click', onLeaveClick);
 
 // Entry point.
 main();
