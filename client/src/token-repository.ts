@@ -9,7 +9,7 @@ function makeTokenRepository() {
          * Provides an access token for the given room name and identity.
          */
         async getToken(roomName: string, identity: string) {
-            const response = await axios.post<{ token: string }>('http://localhost:3000/create-token', {
+            const response = await axios.post<{ token: string }>('[URL]/create-token', {
                 roomName,
                 identity
             });

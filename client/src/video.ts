@@ -1,6 +1,7 @@
 import { 
     connect,
     createLocalVideoTrack,
+    Participant,
     RemoteAudioTrack, 
     RemoteParticipant, 
     RemoteTrack, 
@@ -53,7 +54,8 @@ async function onJoinClick() {
     room = await connect(await tokenRepository.getToken(roomName, identity), {
         name: roomName,
         audio: true,
-        video: { width: 640 }
+        video: { width: 640 },
+        dominantSpeaker: true
     });
 
     // Attach the remote tracks of participants already in the room.
@@ -64,6 +66,7 @@ async function onJoinClick() {
     // Wire-up event handlers.
     room.on('participantConnected', onParticipantConnected);
     room.on('participantDisconnected', onParticipantDisconnected);
+    room.on('dominantSpeakerChanged', onDominantSpeakerChanged);
     window.onbeforeunload = () => room.disconnect();
     
     toggleInputs();
@@ -150,7 +153,7 @@ function onTrackSubscribed(track: RemoteTrack, participant: RemoteParticipant) {
     if (!trackExistsAndIsAttachable(track))
         return;
 
-    attachTrack(track);
+    attachTrack(track, participant.identity);
 }
 
 /**
@@ -208,6 +211,18 @@ function manageTracksForRemoteParticipant(participant: RemoteParticipant) {
     participant.on('trackUnsubscribed', (track: RemoteTrack) => onTrackUnsubscribed(track, participant));
 }
 
+/**
+ * Manages displaying the dominant speaker.
+ * 
+ * @param participant 
+ * The participant who is now the dominant speaker.
+ */
+function onDominantSpeakerChanged(participant: Participant) {
+    document.querySelectorAll('.dominant-speaker')
+        .forEach(item => item.classList.remove('dominant-speaker'));
+
+    document.getElementById(participant.identity)?.classList.add('dominant-speaker');
+}
 
 /**
  * Attaches all attachable published tracks from the remote participant.
@@ -223,7 +238,7 @@ function attachAttachableTracksForRemoteParticipant(participant: RemoteParticipa
         if (!trackExistsAndIsAttachable(publication.track))
             return;
 
-        attachTrack(publication.track);
+        attachTrack(publication.track, participant.identity);
     });
 }
 
@@ -248,13 +263,21 @@ function handleMuteAndUnmuteEventsForRemoteParticipant(participant: RemotePartic
 }
 
 /**
- * Attaches a remote track.
+ * Attaches a remote track within a parent element for the particular participant.
  * 
  * @param track 
  * The remote track to attach.
  */
-function attachTrack(track: RemoteAudioTrack | RemoteVideoTrack) {
-    remoteMediaContainer.appendChild(track.attach());
+function attachTrack(track: RemoteAudioTrack | RemoteVideoTrack, participantIdentity: string) {
+    let participantParentElement = document.querySelector(`#${participantIdentity}`);
+
+    if (!participantParentElement) {
+        participantParentElement = document.createElement('div');
+        participantParentElement.id = participantIdentity;
+        remoteMediaContainer.appendChild(participantParentElement);
+    }
+
+    participantParentElement.appendChild(track.attach());
 }
 
 /**
